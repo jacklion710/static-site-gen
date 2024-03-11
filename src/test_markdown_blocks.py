@@ -1,8 +1,16 @@
 import unittest
+from htmlnode import HTMLNode
 
 from markdown_blocks import (
     markdown_to_blocks,
     block_to_block_type,
+    convert_heading,
+    convert_code,
+    convert_quote,
+    convert_unordered_list,
+    convert_ordered_list,
+    convert_paragraph,
+    markdown_to_html_node,
     block_type_paragraph,
     block_type_heading,
     block_type_code,
@@ -129,6 +137,47 @@ This is text.
         result = block_to_block_type(block)
         expected = block_type_paragraph  # Assuming default behavior is to fallback to paragraph
         self.assertEqual(result, expected)
+
+    def test_convert_heading(self):
+        block = "## This is a heading"
+        expected = HTMLNode(tag="h2", value="This is a heading")
+        result = convert_heading(block)
+        self.assertEqual(result.tag, expected.tag)
+        self.assertEqual(result.value, expected.value)
+        self.assertEqual(len(result.children), len(expected.children))
+
+    def test_convert_code(self):
+        block = "```\nprint('Hello, world!')\n```"
+        expected_code_value = "print('Hello, world!')"
+        result = convert_code(block)
+        self.assertEqual(result.tag, "pre")
+        self.assertTrue(any(child.tag == "code" and child.value == expected_code_value for child in result.children))
+
+    def test_convert_quote(self):
+        block = "> This is a quote"
+        expected = HTMLNode(tag="blockquote", value="This is a quote")
+        result = convert_quote(block)
+        self.assertEqual(result, expected)
+
+    def test_convert_unordered_list(self):
+        block = "* Item 1\n* Item 2"
+        expected = HTMLNode(tag="ul", children=[HTMLNode(tag="li", value="Item 1"), HTMLNode(tag="li", value="Item 2")])
+        result = convert_unordered_list(block)
+        self.assertEqual(result, expected)
+
+    def test_convert_ordered_list(self):
+        block = "1. Item 1\n2. Item 2"
+        expected = HTMLNode(tag="ol", children=[HTMLNode(tag="li", value="Item 1"), HTMLNode(tag="li", value="Item 2")])
+        result = convert_ordered_list(block)
+        self.assertEqual(result, expected)
+
+    def test_convert_paragraph(self):
+        block = "This is a paragraph."
+        expected = HTMLNode(tag="p", value=block)
+        result = convert_paragraph(block)
+        self.assertEqual(result.tag, expected.tag)
+        self.assertEqual(result.value, expected.value)
+        self.assertEqual(len(result.children), len(expected.children))
 
 if __name__ == "__main__":
     unittest.main()
