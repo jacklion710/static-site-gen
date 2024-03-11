@@ -11,7 +11,7 @@ from textnode import (
     text_type_link
 )
 
-class TestDelimiter(unittest.TestCase):
+class TestInlineMarkdown(unittest.TestCase):
     def test_split_with_delimiter(self):
         """Test splitting a string with a defined delimiter."""
         node = TextNode("This is **bold** text", "text")
