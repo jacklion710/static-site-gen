@@ -73,3 +73,34 @@ def split_nodes_link(old_nodes):
         else:
             new_nodes.append(node)
     return new_nodes
+
+text = "This is **text** with an *italic* word and a `code block` and an ![image](https://i.imgur.com/zjjcJKZ.png) and a [link](https://boot.dev)"
+result = [
+    TextNode("This is ", text_type_text),
+    TextNode("text", text_type_bold),
+    TextNode(" with an ", text_type_text),
+    TextNode("italic", text_type_italic),
+    TextNode(" word and a ", text_type_text),
+    TextNode("code block", text_type_code),
+    TextNode(" and an ", text_type_text),
+    TextNode("image", text_type_image, "https://i.imgur.com/zjjcJKZ.png"),
+    TextNode(" and a ", text_type_text),
+    TextNode("link", text_type_link, "https://boot.dev"),
+]
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, text_type_text)]
+
+    nodes = split_node_delimiter(nodes, "**", text_type_bold)  # Bold
+    nodes = split_node_delimiter(nodes, "*", text_type_italic)  # Italic
+    nodes = split_node_delimiter(nodes, "`", text_type_code)  # Code
+
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    
+    # Filter out any empty TextNodes if necessary
+    nodes = [node for node in nodes if node.text.strip()]
+    
+    return nodes
+
+text_to_textnodes(text)
