@@ -5,6 +5,14 @@ class HTMLNode:
         self.children = children or []
         self.props = props or {}
 
+    def __eq__(self, other):
+        if not isinstance(other, HTMLNode):
+            return NotImplemented
+        return (self.tag == other.tag and
+                self.value == other.value and
+                self.children == other.children and
+                self.props == other.props)
+
     def to_html(self):
         raise NotImplementedError
     
