@@ -1,3 +1,5 @@
+# textnode.py
+
 from htmlnode import LeafNode
 
 text_type_text = "text"
@@ -39,7 +41,7 @@ def text_node_to_html_node(text_node):
         return html_node
     if text_node.text_type == "link":
         # "a" tag, anchor text, and "href" prop
-        html_node = LeafNode(tag="a", value=text_node.text, prop="href")
+        html_node = LeafNode(tag="a", value=text_node.text, props={"href": text_node.url})
         return html_node
     if text_node.text_type == "image":
         # "img" tag, empty string value, "src" and "alt" props ("src" is the image URL, "alt" is the alt text)
