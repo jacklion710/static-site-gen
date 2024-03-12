@@ -32,12 +32,6 @@ This project is a static site generator built in Python. It allows for the gener
     source venv/bin/activate # On Windows use `venv\Scripts\activate`
     ```
 
-3. Install dependencies (if any):
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
 ### Usage
 
 1. **Generating the Site**
@@ -58,7 +52,7 @@ This project is a static site generator built in Python. It allows for the gener
     python server.py --dir public
     ```
 
-    By default, the server runs on `http://localhost:8000`. Open this URL in your web browser to view your site.
+    By default, the server runs on `http://localhost:8888`. Open this URL in your web browser to view your site.
 
 3. **Running Tests**
 
