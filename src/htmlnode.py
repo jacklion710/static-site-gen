@@ -1,3 +1,5 @@
+# html.py
+
 class HTMLNode:
     def __init__(self, tag=None, value=None, children=None, props=None):
         self.tag = tag
@@ -14,9 +16,15 @@ class HTMLNode:
                 self.props == other.props)
 
     def to_html(self):
-        raise NotImplementedError
-    
+        if not hasattr(self, 'tag') or self.tag is None:
+            return self.value  # Simple fallback for nodes without a tag
+        props_str = self.props_to_html()
+        children_html = ''.join(child.to_html() for child in self.children)
+        return f"<{self.tag}{props_str}>{children_html}</{self.tag}>"
+
     def props_to_html(self):
+        if self.props is None:
+            return ""
         props_str = ''
         for key, value in self.props.items():
             props_str += f' {key}="{value}"'
@@ -40,12 +48,14 @@ class LeafNode(HTMLNode):
 class ParentNode(HTMLNode):
     def __init__(self, children, tag=None, props=None):
         super().__init__(tag=tag, children=children, props=props)
-
     def to_html(self):
         if self.tag is None:
             raise ValueError("Parent node requires a tag")
-        if not self.children:
+        if self.children is None:
             raise ValueError("Parent node requires children")
         props_str = self.props_to_html()
         child_html = ''.join(child.to_html() for child in self.children)
         return f"<{self.tag}{props_str}>{child_html}</{self.tag}>"
+    
+    def __repr__(self):
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
