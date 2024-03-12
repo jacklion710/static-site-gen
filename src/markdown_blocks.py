@@ -1,6 +1,10 @@
+# markdown_blocks.py
+
 import re
 from htmlnode import HTMLNode
-from htmlnode import LeafNode, LeafNode
+from htmlnode import ParentNode
+from inline_markdown import text_to_textnodes
+from textnode import text_node_to_html_node
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -8,15 +12,6 @@ block_type_code = "code"
 block_type_quote = "quote"
 block_type_unordered_list = "unordered_list"
 block_type_ordered_list = "ordered_list"
-
-from textnode import (
-    text_type_text,
-    text_type_bold,
-    text_type_italic,
-    text_type_code,
-    text_type_image,
-    text_type_link
-)
 
 def markdown_to_blocks(markdown):
     blocks = []
@@ -83,23 +78,32 @@ def convert_ordered_list(block):
 def convert_paragraph(block):
     return HTMLNode(tag="p", value=block)
 
-def markdown_to_html_node(text_node):
-    # Determine the HTML representation based on the text_node's type
-    if text_node.text_type == text_type_text:
-        html_node = LeafNode(tag=None, value=text_node.text)
-    elif text_node.text_type == text_type_bold:
-        html_node = LeafNode(tag="b", value=text_node.text)
-    elif text_node.text_type == text_type_italic:
-        html_node = LeafNode(tag="i", value=text_node.text)
-    elif text_node.text_type == text_type_code:
-        html_node = LeafNode(tag="code", value=text_node.text)
-    elif text_node.text_type == text_type_link:
-        # Assuming 'prop' was meant to be 'props', and it should be a dictionary
-        html_node = LeafNode(tag="a", value=text_node.text, props={"href": text_node.url})
-    elif text_node.text_type == text_type_image:
-        props = {"src": text_node.url, "alt": text_node.text}
-        html_node = LeafNode(tag="img", value="", props=props)
-    else:
-        raise Exception(f"Unsupported text node type: {text_node.text_type}")
-    
-    return html_node
+def block_to_html_node(block):
+    block_type = block_to_block_type(block)
+    if block_type == block_type_paragraph:
+        text_nodes = text_to_textnodes(block)
+        return ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="p")
+    if block_type == block_type_heading:
+        text_nodes = text_to_textnodes(block)
+        hash_count = block.count("#", 0, block.find(" "))
+        tag = f"h{hash_count}"
+        return ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag=tag)
+    if block_type == block_type_code:
+        return convert_code(block)
+    if block_type == block_type_ordered_list:
+        return convert_ordered_list(block)
+    if block_type == block_type_unordered_list:
+        return convert_unordered_list(block)
+    if block_type == block_type_quote:
+        text_nodes = text_to_textnodes(block)
+        return ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="blockquote")
+    raise ValueError("Invalid block type")
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    children = []
+    for block in blocks:
+        html_node = block_to_html_node(block)
+        children.append(html_node)
+    parent_node = ParentNode(children=children, tag="div", props=None)
+    return parent_node
