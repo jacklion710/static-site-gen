@@ -1,28 +1,17 @@
-import os
-import shutil
-from textnode import TextNode
-from htmlnode import LeafNode
+# main.py
 
-def dir_copy(src_dir, dest_dir):
-    if os.path.exists(src_dir):
-        print(f"Source directory {src_dir} does not exist.")
-        return
-    if os.path.exists(dest_dir):
-        shutil.rmtree(dest_dir)
-    os.mkdir(dest_dir)
-    for entry in os.listdir(src_dir):
-        src_path = os.path.join(src_dir, entry)
-        dest_path = os.path.join(dest_dir, entry)
-        if os.path.isfile(src_path):
-            shutil.copy(src_path, dest_path)
-            print(f"Copied file {src_path} to {dest_path}")
-        elif os.path.isdir(src_path):
-            dir_copy(src_path, dest_path)
+import os
+from copystatic import copy_files_recursive
+from generatepage import generate_page
 
 def main():
-    static = "static"
-    public = "public"
-    dir_copy(static, public)
+    static_dir = "static"
+    public_dir = "public"
+    content_path = "content/index.md"
+    template_path = "template.html"
+    dest_path = os.path.join(public_dir, "index.html")
+    copy_files_recursive(static_dir, public_dir)
+    generate_page(content_path, template_path, dest_path)
 
 if __name__ == "__main__":
     main()
