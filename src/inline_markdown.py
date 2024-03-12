@@ -1,3 +1,5 @@
+# inline_markdown.py
+
 import re
 from textnode import (
     TextNode,
@@ -90,17 +92,12 @@ result = [
 
 def text_to_textnodes(text):
     nodes = [TextNode(text, text_type_text)]
-
     nodes = split_node_delimiter(nodes, "**", text_type_bold)  # Bold
     nodes = split_node_delimiter(nodes, "*", text_type_italic)  # Italic
     nodes = split_node_delimiter(nodes, "`", text_type_code)  # Code
-
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
-    
-    # Filter out any empty TextNodes if necessary
     nodes = [node for node in nodes if node.text.strip()]
-    
     return nodes
 
 text_to_textnodes(text)
