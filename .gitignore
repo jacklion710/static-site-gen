@@ -1,4 +1,7 @@
 __pycache__/
 
-public/public/index.html
+public/images/
+public/majesty/
 public/styles.css
+public/index.html
+public/index.css
