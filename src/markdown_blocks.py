@@ -65,13 +65,21 @@ def convert_quote(block):
 
 def convert_unordered_list(block):
     items = block.split("\n")
-    list_items = [HTMLNode(tag="li", value=item.lstrip('* ').lstrip('- ')) for item in items]
+    list_items = []
+    for item in items:
+        item_text = item.lstrip('* ').lstrip('- ')
+        text_nodes = text_to_textnodes(item_text)
+        list_items.append(ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="li"))
     new_block = HTMLNode(tag="ul", children=list_items)
     return new_block
 
 def convert_ordered_list(block):
     items = block.split("\n")
-    list_items = [HTMLNode(tag="li", value=re.sub(r"^\d+\.\s", "", item)) for item in items]
+    list_items = []
+    for item in items:
+        item_text = re.sub(r"^\d+\.\s", "", item)
+        text_nodes = text_to_textnodes(item_text)
+        list_items.append(ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="li"))
     new_block = HTMLNode(tag="ol", children=list_items)
     return new_block
 
