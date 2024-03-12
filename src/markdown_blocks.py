@@ -29,6 +29,14 @@ def markdown_to_blocks(markdown):
 
     return blocks
 
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    children = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        children.append(html_node)
+    return children
+
 def block_to_block_type(block):
     if re.match(r"^#{1,6} ", block):
         return block_type_heading
@@ -51,12 +59,11 @@ def convert_heading(block):
     return LeafNode(tag=f"h{hash_count}", value=html_content, props={})
 
 def convert_code(block):
-    code_lines = block.split("\n")[1:-1]
-    code_text = "\n".join(code_lines)
-    new_block = HTMLNode(tag="pre", value=None, children=[
-        HTMLNode(tag="code", value=code_text)
-    ])
-    return new_block
+    trimmed_block = block.strip("`")
+    code_content = trimmed_block.strip() 
+    code_node = LeafNode(tag="code", value=code_content)
+    pre_node = ParentNode(children=[code_node], tag="pre")
+    return pre_node
 
 def convert_quote(block):
     quote_lines = block.split("\n")
