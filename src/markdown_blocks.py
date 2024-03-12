@@ -2,9 +2,9 @@
 
 import re
 from htmlnode import HTMLNode
-from htmlnode import ParentNode
+from htmlnode import LeafNode, ParentNode
 from inline_markdown import text_to_textnodes
-from textnode import text_node_to_html_node
+from textnode import text_node_to_html_node, TextNode
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -43,11 +43,12 @@ def block_to_block_type(block):
     return block_type_paragraph
 
 def convert_heading(block):
-    hash_count = block.count("#", 0, block.find(" "))  # Count '#' up to the first space
-    heading_text = block[hash_count:].strip()
-    tag = f"h{hash_count}"
-    new_block = HTMLNode(tag=tag, value=heading_text)
-    return new_block
+    hash_count = block.count("#", 0, block.find(" "))
+    title_text = re.sub(r"^#+\s*", "", block)  # Remove hash symbols and leading spaces
+    print(f"Converting heading: '{title_text}' with level {hash_count}")
+    html_content = ''.join([text_node_to_html_node(node).to_html() for node in text_to_textnodes(title_text)])
+    print(f"Generated HTML content for heading: '{html_content}'")
+    return LeafNode(tag=f"h{hash_count}", value=html_content, props={})
 
 def convert_code(block):
     code_lines = block.split("\n")[1:-1]
@@ -58,10 +59,10 @@ def convert_code(block):
     return new_block
 
 def convert_quote(block):
-    quote_lines = [line.lstrip('> ').rstrip() for line in block.split("\n")]
-    quote_text = "\n".join(quote_lines)
-    new_block = HTMLNode(tag="blockquote", value=quote_text)
-    return new_block
+    quote_lines = block.split("\n")
+    quote_contents = [re.sub(r"^>\s*", "", line) for line in quote_lines]  # Remove '>' from each line
+    quote_html_nodes = [LeafNode(tag="p", value=line) for line in quote_contents if line.strip()]
+    return ParentNode(children=quote_html_nodes, tag="blockquote")
 
 def convert_unordered_list(block):
     items = block.split("\n")
@@ -84,18 +85,16 @@ def convert_ordered_list(block):
     return new_block
 
 def convert_paragraph(block):
-    return HTMLNode(tag="p", value=block)
+    text_nodes = text_to_textnodes(block)
+    new_block = ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="p")
+    return new_block
 
 def block_to_html_node(block):
     block_type = block_to_block_type(block)
     if block_type == block_type_paragraph:
-        text_nodes = text_to_textnodes(block)
-        return ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="p")
+        return convert_paragraph(block)
     if block_type == block_type_heading:
-        text_nodes = text_to_textnodes(block)
-        hash_count = block.count("#", 0, block.find(" "))
-        tag = f"h{hash_count}"
-        return ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag=tag)
+        return convert_heading(block)
     if block_type == block_type_code:
         return convert_code(block)
     if block_type == block_type_ordered_list:
@@ -103,8 +102,7 @@ def block_to_html_node(block):
     if block_type == block_type_unordered_list:
         return convert_unordered_list(block)
     if block_type == block_type_quote:
-        text_nodes = text_to_textnodes(block)
-        return ParentNode(children=[text_node_to_html_node(node) for node in text_nodes], tag="blockquote")
+        return convert_quote(block)
     raise ValueError("Invalid block type")
 
 def markdown_to_html_node(markdown):
